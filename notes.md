@@ -446,3 +446,300 @@ Nesta aula, aprendemos sobre:
 Implementação da classe UIImagePickerController:
 O tipo SourceType.photoLibrary fornece, aos dispositivos, o uso da biblioteca de imagens.
 Para exibir a tela de seleção de foto ou câmera, você pode utilizar o método present do ViewController.
+
+@04-Core Data
+
+@@01
+Projeto da aula anterior
+
+Se você deseja começar o curso a partir desta aula, pode fazer o download do projeto desenvolvido até o momento.
+
+https://github.com/alura-cursos/2315-Alura-Ponto/archive/14c800c310aa4a8f4772531b4ffa2a05b64e171f.zip
+
+@@02
+Persistência com Core Data
+
+[00:00] A partir de agora nós vamos começar a entender como funciona a persistência de informações localmente no nosso device, para resolver um problema que nós temos, que é relacionado à marcação de ponto.
+[00:13] Nós batemos o ponto, só que ao fechar o aplicativo e abrir novamente nós perdemos essa informação. Então a partir de agora estudaremos sobre persistência de informações do nosso device.
+
+[00:28] Para começar, o que precisamos entender? Há vários frameworks que nos auxiliam nessa tarefa. No nosso caso vamos utilizar o Core Data, que é um framework nativo do iOS. Ele é muito interessante, vou até abrir a página da documentação acessível neste link. O Core Data é um framework nativo da Apple, então ele nos ajudar a persistir informações no nosso aplicativo.
+
+[00:59] Temos algumas informações na documentação, como por exemplo, o Core Data Stack, que é basicamente essa ilustração.
+
+[01:07] Nós temos alguns nomes um pouco estranhos, mas na prática vamos entender melhor. Só é importante saber que eles existem nesse momento. Temos o Persistent container, temos o ManagedObjectModel, que é um model, e na verdade o espelho do nosso modelo é a entidade que vamos criar no Core Data.
+
+[01:30] Nós temos o contexto, que vamos utilizar bastante. Ele nos ajuda a observar todos os eventos que fazemos no nosso modelo. E o utilizamos muito para as informações persistirem, para conseguirmos deletar, para conseguirmos ler, enfim.
+
+[01:54] E o Store coordinator, que na verdade é de fato o que faz as operações no Core Data.
+
+[02:02] É importante dizer que ele é um gerenciador de banco de dados. Então temos alguns ganhos utilizando esse framework.
+
+[02:11] Por exemplo, nós não precisamos entender de queries, SQL, não precisamos criar nenhum script para criar, deletar, ler essas informações. Ele abstrai tudo isso para nós e nos ajuda a persistir os dados e a fazer um CRUD de forma muito mais simples.
+
+[02:38] Para começar, o que precisamos entender? Quando vamos trabalhar com o Core Data, a primeira coisa que temos que fazer é configurá-lo no projeto.
+
+[02:49] Se eu fosse criar um novo projeto, vou vir em “File > New > Project” e escolher a opção "App" e dar qualquer nome, como “teste”.
+
+[03:06] Repare que eu tenho um checkbox para usar o Core Data. Então se eu quiser utilizar a persistência de informações do meu projeto eu marco essa opção.
+
+[03:18] Quando eu marco essa opção e crio o projeto, automaticamente ele já me traz algumas coisas importantes, por exemplo, esse Core Data Stack, que tem o persistent container que estávamos vendo na documentação. Ele traz também o método saveContext().
+
+[03:51] Ou seja, quando eu marco aquela opção, ele basicamente já cria esse template do Core Data.
+
+[03:58] Outra coisa que ele cria é um arquivo que vamos utilizar, chamado “Alura_ponto”, com a extensão “xcdatamodel”. Isso é uma das partes mais importantes, porque é nessa tela que configuramos as nossas entidades.
+
+[04:19] Basicamente o que ele faz é um schema de um banco de dados qualquer. Também temos algumas outras visualizações para conseguir ver o relacionamento entre as tabelas, entre as entidades, enfim. Tem muita coisa que podemos fazer.
+
+[04:38] Então dando um overview para começarmos a utilizar o Core Data, podemos configurá-lo quando criamos um novo projeto, e quando criamos um novo projeto ele já traz esses dois pontos que eu apresentei para você: no “AppDelegate” ele já traz algumas informações. E traz também esse schema, esse arquivo “Alura_Ponto.xcdatamodel” que nos ajuda a criar as entidades.
+
+[05:08] Então para começar a mexer com o Core Data a ideia é persistirmos as informações da classe Recibo, onde nós temos o ID, o status, a data, a foto. Então é basicamente por aqui que vamos começar.
+
+[05:26] Eu vou abrir o arquivo “Alura_Ponto.xcdatamodel” para começarmos a criar nossa primeira entidade. Como criar uma entidade no Core Data?
+
+[05:38] Eu tenho na parte inferior da tela um botão “Add Entity”, com um ícone de sinal de mais. É através dele que eu vou criar uma nova entidade. Então vou clicar e ele já traz essa entidade pré-configurada.
+
+[05:58] Eu vou começar criando a entidade Recibo, porque é o nosso modelo recibo que nós vamos espelhar nessa entidade que nós estamos criando. Então eu vou clicar em cima da entidade que ele criou e renomear para “Recibo”, e pressionar “Enter”.
+
+[06:18] Agora vou apertar as teclas “Command + B” para ele fazer o build do projeto e nós vamos fazer um teste.
+
+[06:29] A primeira coisa que faremos é o seguinte: nós temos a opção de criar uma entidade, que é o que nós fizemos agora, e eu vou começar então criando os atributos que nós temos na classe Recibo.
+
+[06:44] Então na entidade vou criar os mesmos atributos. Eu tenho um ID, que é do tipo UUID. Também tenho status, data e foto.
+
+[07:08] O status é uma variável booleana. É importante salvarmos igual está na classe, então em letras minúsculas no caso. Em seguida temos a data, que é do tipo Date. E eu tenho a foto, que é um UIImage.
+
+[07:33] Como trabalhamos com foto quando vamos fazer a persistência local? Temos que ter alguns cuidados, como o tamanho dessa foto. Ao decorrer do tempo, se nós estamos trabalhando com uma foto de uma definição muito alta isso vai ficar muito pesado para salvarmos localmente no nosso app.
+
+[07:56] No caso, temos algumas opções para trabalhar com esse tipo. Nós podemos criar o tipo binário, em que transformamos isso em um binário e salvamos. Ou nós podemos utilizar o “Transformable”, que é o que nós vamos utilizar por ser um pouco mais fácil de trabalhar na hora de fazer o Casting, de salvar isso e depois recuperar e converter para UIImage.
+
+[08:25] Esses são os tipos então que nós vamos utilizar. Vou fazer “Command + B” para buildar novamente. E nós temos alguns erros.
+
+[08:35] Ele está reclamando porque quando trabalhamos com o Core Data e criamos uma entidade, na verdade ele cria uma nova classe.
+
+[08:46] Estou averiguando os erros, e ele fala que é uma declaração inválida de recibo, porque na verdade já temos uma classe com o mesmo nome, “Recibo”. Não podemos ter duas classes com o mesmo nome. Então esse é o primeiro problema que nós acabamos de pegar.
+
+[09:06] Nós já temos uma classe recibo e o Core Data cria uma entidade e também cria uma classe com o mesmo nome da entidade.
+
+[09:14] Então nesse momento temos duas classes com o mesmo nome, essa que o próprio comentário diz que “esse arquivo foi gerado automaticamente e não deveria ser editado”, porque o próprio framework cria para nós.
+
+[09:31] Então tenho essa classe recibo que ele criou e a nossa classe recibo, que já estamos utilizando para salvar e utilizar na hora de bater o ponto.
+
+[09:47] A ideia é utilizarmos essa mesma classe com os métodos que o Core Data nos fornece para gerenciar essa classe e persistir isso local. É isso que veremos a seguir.
+
+@@03
+Salvando objetos
+
+[00:00] Agora vamos resolver esse primeiro problema que nós pegamos ao criar uma entidade. Nós vimos que o Core Data cria automaticamente uma classe com o mesmo nome da entidade. Até aí não tem nenhum problema, porque nós criamos uma entidade e ele cria uma classe em cima desse nome.
+[00:20] O problema é que nós já tínhamos a nossa classe com o nome “Recibo”. Não podemos ter duas classes com o mesmo nome no projeto.
+
+[00:32] Quando criamos uma entidade temos algumas configurações que nós podemos fazer no nosso projeto. Então eu vou abrir o menu lateral direito da entidade, e no “Data Model Inspector” vamos na opção “Codegen”.
+
+[00:57] Ele tem marcada a opção “Class Definition”, e nós vamos trocar para “Manual/None”. Marquei essa opção, eu vou apertar o “Command + B” novamente. Agora o projeto buildou com sucesso, porque ele não gera mais o código automaticamente quando criamos essa entidade.
+
+[01:20] Em contrapartida, precisaremos fazer algumas configurações manualmente, já que nós abdicamos dessa configuração que ele nos dá.
+
+[01:31] Na classe Recibo vamos começar implementando alguns métodos que precisamos para que isso funcione como, por exemplo, o método save, delete, e tudo mais. Mas antes disso precisamos utilizar e estender de uma classe chamada NSManagedObject. Só que nós não a temos, porque precisamos importar o Core Data, então vou importá-lo com import CoreData.
+
+[02:05] E agora vamos utilizar essa classe NSManagedObject. Como você pode perceber, ele começa com "NS". Isso vem do Objective-C. Na verdade, o Core Data é feito no Objective-C, e por isso em alguns momentos nós vamos utilizar esse prefixo "NS".
+
+[02:34] Então nós falamos que ele é uma classe que está implementando esse NSManagedObject, que é do Core Data. Quando nós clicamos na definição nós conseguimos ver que ele realmente é do Core Data, é um NSObject. Ele tem várias funções, métodos, e vamos utilizar algumas delas.
+
+[03:04] O primeiro passo já está feito. Agora precisamos associar todas essas variáveis que nós criamos com esses atributos que nós criamos na nossa entidade.
+
+[03:15] Então precisamos da seguinte marcação: @NSManaged. Para todos os atributos que formos espelhar da nossa entidade, que são data, foto, ID e status, nós precisamos colocar essa marcação. Vou copiar essa marcação para todos os atributos.
+
+[03:47] Agora ele está indicando erros no nosso método construtor, porque ainda não o configuramos. Mas quando criamos uma entidade o Core Data já cria alguns métodos inicializadores para essa entidade.
+
+[04:03] Eu vou deixar esse método init, na verdade como um convenience init, porque nós já temos um método init onde nós passamos o contexto do Core Data, que é que nós vamos utilizar.
+
+[04:20] E para inicializarmos nossa classe da forma que nós precisamos, que é com essa assinatura de método, ou seja, pedindo status, a data e a foto, estamos criando um outro inicializador customizado.
+
+[04:37] Eu vou agora fazer self.init, e eu tenho um construtor onde eu passo o contexto: sel.init(context: ). Esse contexto pede que passemos então uma variável do tipo NSManagedObjectContext.
+
+[05:03] Para termos acesso a essa variável, lembra que no início da aula, quando falamos sobre persistência, nós falamos sobre alguns templates que o Xcode cria para nós quando marcamos a opção de uso do Core Data na criação do projeto?
+
+[05:22] Esse contexto nós temos justamente no AppDelegate. Então nós precisamos ter acesso a esse contexto.
+
+[05:32] No recibo vou criar um atributo chamado contexto e eu vou utilizar o Singleton do AppDelegate, que é UIApplication.shared.delegate as! AppDelegate.
+
+[05:53] No AppDelegate, eu tenho acesso a template do Core Data, que é o contexto.persistentContainer. Relembrando, o persistent container é responsável por todo o Core Data Stack. E nós precisamos do contexto, então vamos utilizar o .viewContext.
+
+[06:20] Com isso já temos então um inicializador para nossa classe. Eu vou dar um “Command + B” para ver se nosso projeto está buildando.
+
+[06:29] Ainda tem algumas configurações que precisamos fazer para que isso funcione, mas eu vou mostrar primeiro o erro para vermos o porquê de precisarmos configurar.
+
+[06:41] Teoricamente nós já temos uma classe que está espelhando nossa entidade, que é o Recibo. Agora vamos começar a implementar alguns métodos como, por exemplo, o save, o delete, todos esses métodos que fazem parte da camada DAO da nossa classe.
+
+[07:06] Começando pelo save. Então vou criar uma extensão da nossa classe recibo: extension Recibo. E vou criar um mark, que é nosso Core Data, que é nossa camada DAO, // MARK: - Core Data - DAO.
+
+[07:24] Vou criar o método save, func save() em que vou pedir por parâmetro o contexto, que nós já vimos um pouco agora há pouco, que é um func save(_ contexto: NSManagedObjectContext). E com o contexto eu consigo fazer a operação então para salvar.
+
+[07:49] Quando eu chamo o contexto e dou um contexto.save, repara que ele é uma throw function, ou seja, uma função que pode ter exceção. Pode ter algum erro que ele não consiga salvar, e ele vai dar uma exceção.
+
+[08:03] Para chamarmos métodos com essa assinatura, precisamos fazer um do { } catch, e dentro tentamos através do try chamar o try contexto.save.
+
+[08:19] Caso ele não consiga, eu posso utilizar, por exemplo, uma tela, um modal de erro. Mas nesse caso por enquanto só queremos saber qual foi o erro. Então vou pedir para ele imprimir qual foi o erro, print(error.localizedDescription).
+
+[08:35] Configuramos a classe, criamos nosso primeiro método save. Agora temos que relembrar onde nós utilizamos o método save. Na verdade é quando batemos o ponto. Tiramos a selfie, clicamos em confirmar, ele vai vir no nosso “HomeViewController” e nós temos o método didSelectFoto, onde nós adicionamos por enquanto o recibo numa variável dessa classe seção. A ideia é utilizarmos essa função.
+
+[09:15] Eu vou utilizar o recibo.save e vou passar um contexto. Esse contexto vamos criar uma variável nesse View Controller para nos ajudar com isso. Então vou criar uma variável computada chamada contexto, que é do tipo var contexto: NSManagedObjectContext.
+
+[09:37] Ele não está encontrando porque nós precisamos importar o Core Data, então antes vamos fazer import Core Data. E agora sim vamos criar uma variável do tipo var contexto: NSManagedObjectContext.
+
+[09:53] Essa é uma variável computada. Uma variável computada é uma variável dentro da qual podemos criar e configurar algumas coisas. É isso que vamos fazer. Na verdade eu vou utilizar a mesma implementação que nós temos na classe recibo, onde nós buscamos o contexto no nosso AppDelegate.
+
+[10:18] Então vou criar o contexto, que é do tipo NSManagedObjectContext e em seguida vou dar return contexto.persistentContainer.viewContext.
+
+[10:35] Com essa variável agora eu passo contexto para o método save. Vou dar um “Command + B” para ver se está tudo buildando.
+
+[10:46] Agora vamos testar. Então vou buildar isso no meu iPhone, vou rodar o projeto e vamos testar para ver se está funcionando. Então já subimos o simulador. Eu estou utilizando meu iPhone mesmo para testar. Então eu vou tirar uma selfie como se fosse bater o ponto de verdade. Seleciono a foto, clico em “Use”, e temos um problema.
+
+[11:33] Ele fala que um NSManagedObject, que é a nossa classe recibo, deve ter um NSEntityDescription.
+
+[11:44] Basicamente esse erro acontece porque algumas classes que nós estamos utilizando são de Objective-C e a nossa classe Recibo precisa de uma anotação para dizer que essa classe também pode ser usada por classes de Objective-C.
+
+[12:04] Então vou colocar a nossa anotação e o nome da classe: @objc(Recibo). Vamos ver, vou rodar mais uma vez. E na classe Recibo, onde salvamos eu vou colocar um breakpoint em cima desse try. Se ele não entrar nesse print desse erro significa que o nosso método funcionou, ou seja, salvou.
+
+[12:30] Ainda não vamos conseguir ver, porque não tem a funcionalidade de listar novamente. Isso vamos implementar daqui a pouco. Mas se não entrar nesse erro significa que salvou.
+
+[12:45] Então mais uma vez vou tirar uma selfie, vou clicar em “Usar foto”. Agora ele já entrou dentro desse try. Eu vou passar para a linha de baixo. Não entrou no print(error.localizedDescription), então eu vou soltar e significa que salvou.
+
+[13:10] Ele está listando porque ainda estamos utilizando a seção que tem a lista com os recibos. Não é o que acabamos de persistir, é a lista com os recibos.
+
+[13:23] Mas só de não ter entrado nesse erro significa que o nosso método utilizou o save do contexto. Então a primeira parte, que é salvar o nosso recibo, já está ok.
+
+[13:34] A seguir continuaremos com as outras implementações.
+
+@@04
+Listando objetos
+
+[00:00] Nós estamos trabalhando com a persistência local dos nossos objetos recibos e nós estamos utilizando a classe Recibo para criar os métodos da nossa camada DAO, ou seja, da nossa camada de persistência.
+[00:13] Nós já temos então o método save, e nós já testamos. O próximo método que nós vamos implementar é o método para recuperarmos os objetos salvos. Vamos carregar os recibos que foram salvos com o Core Data.
+
+[00:34] A primeira coisa que faremos então é criar um novo método bem parecido com esse, só que a assinatura do método é um pouco diferente.
+
+[00:42] O nome que eu vou dar vai ser func carregar. Nós vamos precisar informar o buscador. Com o Core Data nós não precisamos escrever scripts SQL, mas nós temos que criar uma variável, que é o nosso FetchRequest para indicar de qual entidade ele vai buscar, enfim. Nós temos que orientar o Core Data sobre como será essa busca, em questão de ordenação e tudo mais.
+
+[01:20] Nós vamos criar a assinatura do método da seguinte forma: nós vamos criar uma variável do método do tipo fetchedResultController: NSFetchedResultsController. E também temos que informar qual é o tipo que ele vai buscar, que será <Recibo>. É esse o tipo que ele vai buscar nesse buscador.
+
+[01:52] Lembrando que nós temos o nosso schema, onde nós criamos uma entidade recibo, mas poderia ter várias outras entidades. Elas poderiam ter relacionamento entre elas, enfim.
+
+[02:08] Nós estamos fazendo uma operação de CRUD simples, mas o Core Data tem muitas funcionalidades, e por isso que quando criamos essa variável que é o nosso buscador, fetchedResultController, ele pede que informe qual é a entidade que ele vai buscar.
+
+[02:28] Nós faremos algo parecido. A ideia é pegarmos esse fetchedResultController e fazer .performFetch. Só que repare que ele também é uma throw function. Quando temos métodos com essa assinatura de throws significa que ele pode disparar exceção. E podemos tratar a exceção, ver qual foi o erro, enfim.
+
+[02:56] O que eu quero dizer é que todos os métodos que têm essa assinatura de throws nós precisamos utilizar um do catch, igual nós fizemos no método save. Então vou criar um do catch. E agora sim tentamos fazer o perform fetch, que é a busca de fato.
+
+[03:21] Então vou pegar try fetchedResultController, que é a nossa variável que faz a busca, e vou chamar o método performFetch. Caso ele não consiga, eu vou verificar qual foi o erro, chamando o print(error.localizedDescription).
+
+[03:39] Então nós já criamos um método para isso. Agora vamos no View Controller de recibo, onde nós listamos os recibos.
+
+[03:54] No método viewDidAppear nós vamos chamar um novo método que nós vamos criar, que é o func getRecibos(). E eu vou chamar então a classe Recibo e chamar o método carregar, Recibos().carrega.
+
+[04:17] Agora nós temos alguns problemas. Primeiro: quando instanciamos a classe Recibo temos que passar algum Construtor.
+
+[04:27] Para melhorar um pouco podemos voltar na classe Recibo e dizer que a classe carregar é um class func. Significa que não precisamos instanciar a classe para utilizar esse método. Podemos simplesmente referenciar a classe e fazer Recibo.carregar.
+
+[04:55] Agora temos o problema, porque nós não temos uma variável do tipo fetchedResultController, e vamos criá-la agora. Só para não esquecer, como nós criamos o método getRecibo eu vou chamá-lo na viewDidAppear.
+
+[05:18] Quando chamamos o método carregar nós precisamos passar esse fetchedResultController que nós ainda não temos, então nós vamos criar agora.
+
+[05:28] Eu vou criar uma variável computada. Como estamos trabalhando com esse fetchedResultController e o nome não é nem um pouco fácil de entender o que ele faz, eu vou chamar a nossa constante de “buscador”, e ele é let buscador: NSFetchedResultController.
+
+[05:51] Porém, eu não tenho acesso a ele enquanto não importar o Core Data, então vou fazer import CoreData.
+
+[06:01] Agora sim vou fazer let buscador: NSFetchedResultsController<>. Eu tenho que indicar então qual entidade eu vou procurar. No caso é recibo, e eu vou inicializar então a minha variável computada. Sempre que eu inicializo uma variável computada tem que abrir e fechar parênteses.
+
+[06:26] No final das contas eu vou ter que dar um return desse return NSFetchedResultController, só que ele tem vários parâmetros. Vou até fechar o menu lateral esquerdo para visualizarmos melhor quais são os parâmetros que temos.
+
+[06:46] O primeiro é esse fetchRequest, que vamos pegar na nossa classe Recibo, que é onde nós indicamos qual a entidade que nós vamos buscar.
+
+[07:01] Esse managedObjectContext é o contexto, que nós já trabalhamos com o salvar, que nós precisamos ter acesso ao AppDelegate. No AppDelegate temos acesso ao PersistentSotre, e em seguida à View Context, que é do tipo managedObjectContext.
+
+[07:21] E os dois últimos parâmetros nós não vamos utilizar agora, que são sectionNameKeyPath e o cacheName. Mas temos que criar então o fetchRequest e o contexto.
+
+[07:38] Eu vou começar criando uma variável do tipo let fetchRequest:, que é do tipo NSFetchRequest<>. Eu tenho que passar então o tipo que eu estou buscando, que é o tipo recibo. E eu vou inicializá-lo chamando o recibo, que é a classe que nós temos, seguido de .fetchRequest.
+
+[08:02] Só que nós precisamos implementar esse método, porque aqui ele está genérico. Nós precisamos indicar qual é a entidade que nós vamos buscar. Ele está até reclamando.
+
+[08:16] Então antes de continuarmos com o nosso buscador vou voltar na classe Recibo e eu vou criar uma class func nova, que é um método que nós não precisamos instanciar a classe, do tipo fetchRequest.
+
+[08:37] A única coisa que vamos mudar é que ele está do tipo genérico, o NSFetchRequestResult, só que na verdade já sabemos que o resultado é do tipo recibo.
+
+[08:51] Eu vou dar um return NSFetchRequest, e vou passar o nome da entidade, que é Recibo: return NSFetchRequest(entityName: “Recibo”). Quando eu digo nome da entidade é o nome que colocamos na nossa entidade no Core Data quando criamos.
+
+[09:16] Então já sabemos que o nome da entidade é recibo. E agora sim podemos voltar e utilizar esse método. Vou voltar no “ReciboViewController”, vou apagar esse fetchRequest e procurá-lo de novo. Repara que agora eu já tenho ele do tipo recibo. Quando eu o chamo, já aparece NSFetchRequest<Recibo>.
+
+[09:54] Como nós já temos o primeiro parâmetro, já vou passá-lo. Só que ainda precisamos configurar algumas coisas desse FetchRequest como, por exemplo, a ordenação. Quando nós formos buscar os recibos nós podemos ordenar, por exemplo, pela data mais recente ou pela data mais antiga. Então tudo isso conseguimos fazer através de um sort descriptor.
+
+[10:25] Quando precisamos fazer essas buscas com ordenação vamos configurar esse sort descriptor, que é o que veremos agora.
+
+[10:34] Eu vou criar um sort descriptor do tipo let sortDescriptor = NSSortDescriptor. Eu tenho que passar uma chave, e ele tem um outro parâmetro, que é esse ascending.
+
+[10:53] A key, que é a chave, é qual atributo eu quero buscar. Eu quero buscar por data, por ID, por status, então preciso ter um ponto de partida para ele saber qual atributo ele vai buscar para conseguir ordenar da forma que esperamos.
+
+[11:16] Eu vou buscar por data, porque faz mais sentido. Quando eu bato um ponto eu quero ver qual foi o último, os mais recentes. Os mais antigos vão ficando no final da lista.
+
+[11:27] Então vou procurar por data, então key: “data”. E o ascending eu tenho que passar como falso, porque eu quero os mais atuais na frente.
+
+[11:39] Eu vou pegar o fetchRequest.sortDescriptor. Repara que ele é uma lista de NSSortDescriptor, ou seja, poderia também ordenar por mais de um atributo. E como é uma lista eu dou um igual, abro e fecho colchetes e passo dentro o sortDescriptor.
+
+[12:01] Por último precisamos do contexto. É aquela velha história do AppDelegate. Então vou criar uma constante, que é let appDelegate = UIApplication.shared.delegate as! AppDelegate.
+
+[12:24] No AppDelegate temos acesso aos métodos que o Core Data já nos traz quando criamos o projeto, e nós vamos utilizá-los. Então vou pegar o AppDelegate.persistentContainer.viewContext. Os parâmetros sectionNameKeyPath e cacheName nós não vamos utilizar, então vou passar nil nos dois.
+
+[12:55] Nós já temos então o nosso buscador. Ele tem uma característica que nós vamos ver nos próximos vídeos, que é um protocolo que nós podemos implementar para observar alguns eventos.
+
+[13:10] Por exemplo, quando eu deleto um recibo eu posso ter acesso à linha que foi deletada; quando eu faço uma busca eu posso ter acesso aos elementos que ele me traz.
+
+[13:22] Então para eu conseguir escutar todos esses eventos eu vou setar o delegate dele, que nós vamos implementar na hora que formos fazer a busca, para termos acesso a esses eventos. Então vou fazer buscador.delegate = self. Vou dar um “Command + B”. Ele está reclamando porque nós precisamos implementar esse protocolo, que é esse NSFetchedResultsControllerDelegate.
+
+[13:54] Vou até criar uma extensão no final da nossa classe: extension ReciboViewController: NSFetchedResultsControllerDelegate {}. E vou deixá-lo implementado.
+
+[14:10] Para finalizar então eu preciso passar o buscador que nós acabamos de criar, que é toda a variável computada que acabamos de criar. Vou dar um “Command + B” para ver se nosso código está compilando.
+
+[14:28] O próximo passo então é nós substituirmos todos os lugares que estão utilizando essa classe seção, tanto para salvar quanto para listar os elementos, e utilizar o nosso buscador que nós acabamos de criar, que é a variável que nos dá acesso a essas consultas.
+
+@@05
+Cuidado ao usar o Core Data
+
+Estudamos, na aula, que o Core Data é um framework de persistência de objetos muito poderoso.
+Qual o principal cuidado que devemos ter ao implementar o Core Data?
+
+Não é recomendado utilizar o Core Data para criar banco de dados complexos e com vários relacionamentos no aplicativo.
+ 
+Correto! Para esse fim, o correto é ter um serviço de back-end responsável por criar essas estruturas complexas.
+Alternativa correta
+Não é possível armazenar imagens no Core Data. Para armazenar imagens, temos que fazer uso da classe UserDefaults.
+ 
+Alternativa correta
+O Core Data tem um número máximo de objetos a ser persistidos no device. A longo prazo, essa limitação pode ser um problema.
+ 
+O Core Data não possuí um número máximo de objetos a ser persistidos no device. Porém, se você for trabalhar com um número muito grande de transações, é recomendado retirar essa responsabilidade do app, e implementar um serviço de back-end no projeto.
+Alternativa correta
+Para manipular os objetos, utilizamos instruções SQL, ou seja, se o banco de dados utilizar regras muito complexas, não é recomendado deixar na parte mobile do projeto.
+
+@@06
+Faca como eu fiz: Persistência local
+
+Quando pensamos em persistência de informações locais, temos várias opções, entre elas, o Core Data. Com ele, podemos criar entidades e fazer com que persistam as informações no device.
+Conforme estudamos no vídeo, o responsável por fazer as operações de CRUD dos objetos é o Managed Object Context.
+
+Como podemos ter acesso ao contexto no ViewController?
+
+O primeiro passo, para criarmos o contexto, ou seja, a variável do tipo Managed Object Context, é importar o Core Data no ViewController que vamos utilizar:
+import CoreDataCOPIAR CÓDIGO
+Com o Core Data importado, podemos criar uma variável computada que vai retornar um objeto do tipo Managed Object Context (através do app delegate):
+
+var contexto: NSManagedObjectContext = {
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+
+        return  appDelegate.persistentContainer.viewContext
+}()
+
+@@07
+O que aprendemos?
+
+Nesta aula, aprendemos sobre:
+Salvar elementos local: Aprendemos a configurar o Core Data e criar schema de objetos a serem persistidos.
+Listar elementos: Utilizamos o NSFetchedResultsController para recuperar as informações salvas.
