@@ -82,7 +82,6 @@ Vimos o que será tratado neste curso, conhecemos o projeto e um pouco sobre fra
 
 @@01
 Projeto da aula anterior
-PRÓXIMA ATIVIDADE
 
 Se você deseja começar o curso a partir desta aula, pode fazer o download do projeto desenvolvido até o momento.
 
@@ -242,7 +241,6 @@ Testando a câmera
 
 @@05
 Verificando a disponibilidade do recurso
-PRÓXIMA ATIVIDADE
 
 Qual a importância da implementação do método isSourceTypeAvailable da classe UIImagePickerController?
 
@@ -260,7 +258,6 @@ O método isSourceTypeAvailable recupera a foto tirada com a câmera do iOS e no
 
 @@06
 Faça como eu fiz: Uso da câmera / biblioteca de imagens
-PRÓXIMA ATIVIDADE
 
 O uso da classe UIImagePickerController nos oferece a possibilidade de utilização tanto da câmera, quanto da biblioteca de imagem do iOS.
 Como podemos ter acesso aos eventos de uso da câmera para tirar uma foto ou a escolha de uma imagem da biblioteca?
@@ -271,9 +268,181 @@ Para ter acesso aos eventos de escolha de foto, é necessário implementarmos o 
 
 @@07
 O que aprendemos?
-PRÓXIMA ATIVIDADE
 
 Nesta aula, aprendemos sobre:
 Implementação da classe UIImagePickerController:
 A classe '''UIImagePickerController''' nos oferece o uso da câmera para tirar fotos, gravar filmes e escolher itens da biblioteca de mídia do usuário.
 O tipo SourceType.Camera fornece, aos dispositivos que suportam captura de mídia, o uso da câmera ou gravação de vídeos.
+
+#### 22/08/2023
+
+@03-Biblioteca de fotos
+
+@@01
+Projeto da aula anterior
+
+Se você deseja começar o curso a partir desta aula, pode fazer o download do projeto desenvolvido até o momento.
+
+https://github.com/alura-cursos/2315-Alura-Ponto/archive/c5d55d13e856d15d1b14423e43a759f0911cce7f.zip
+
+@@02
+Biblioteca de fotos do iOS
+
+[00:00] Já aprendemos a acessar a câmera do iPhone e tirar a foto, vamos seguir com as implementações, só que agora vamos aprender a acessar a biblioteca de imagens do iOS.
+[00:11] Nós temos a aba de recibos, onde nós podemos escolher uma imagem de perfil do usuário que utiliza esse app. Quando eu clico sobre o espaço para a foto eu abro um UIAlertController. E eu tenho duas opções: uma é “Cancelar” e outra é a “Biblioteca de fotos”. Quando seleciono uma imagem eu posso setar então a imagem de perfil na tela de recibos.
+
+[00:35] Dividiremos esse vídeo em duas etapas. A primeira é criação desse menu, que é um UIAlertController. E a segunda etapa é de fato a utilização do UIImagePickerController para ter acesso à biblioteca de fotos.
+
+[00:50] Ao clicar em cima do ícone da foto de perfil é disparado o método escolherFotoButton. E a ideia é criarmos esse menu, esse UIAlertController com essas opções.
+
+[01:05] No ReciboViewController, vou vou criar um novo método chamado mostraMenuEscolhaDeFoto. E vou chamar esse método na ação do botão escolher foto. Dentro desse método eu vou começar a criar o meu menu, que é um UIAlertController. E vou passar um título e uma mensagem nesse menu.
+
+[01:31] O título vai ser “Seleção de foto”. E a mensagem que eu vou colocar nesse menu será “Escolha uma foto da biblioteca”, let menu = UIAlertController(title: “Seleção de Fotos”, message: “Escolha uma foto da biblioteca”, preferredStyle: UIAlertController.Style).
+
+[01:49] E é muito importante o tipo desse menu. Nós temos um actionSheet, que é esse menu que vamos utilizar que sobe, aparecendo de baixo para cima. Ou nós temos o Alert, que aparece geralmente no meio da tela. Nesse caso nós vamos optar pelo actionSheet.
+
+[02:07] Depois que nós criamos o menu vamos adicionar algumas opções nele, que são na verdade os botões, as ações que esse menu vai ter. Então vou fazer menu.addAction, e vou inicializar esse UIAlertAction, passando um título.
+
+[02:24] A primeira opção vai ser “Biblioteca de fotos”, o estilo será o default e esse handler é uma closure, onde eu posso nomear esse primeiro parâmetro, e vou colocar, por exemplo, action. Mas o que importa é o que faremos dentro dele.
+
+[02:48] Vai ser disparado quando eu selecionar uma opção no menu. Então eu cliquei em cima de “Biblioteca de fotos”. Tudo que eu implementar aqui será chamado.
+
+[03:03] Vamos começar fazendo algumas verificações. A primeira é se temos acesso, se temos o recurso da biblioteca de fotos, igual nós fizemos com a câmera, em que nós fizemos uma validação para verificar se existe o recurso.
+
+[03:24] Nós fizemos o if na home. Se tivermos o recurso da câmera disponível nós fazemos o que precisamos. E faremos a mesma coisa agora. Faremos essa validação para verificar se existe esse recurso.
+
+[03:43] Então if UIImagePickerController.isSourceTypeAvailable. Nesse caso, em vez da câmera vamos usar a biblioteca de fotos: if UIImagePickerController.isSourceTypeAvailable(.photoLibrary). Se tivermos esse recurso disponível vamos implementar a chamada para a biblioteca de fotos.
+
+[04:05] Continuaremos utilizando a classe da câmera para essas responsabilidades de tirar e escolher foto. Dessa forma conseguimos extrair um pouco dessa lógica do View Controller, para não deixar o View Controller massivo, e deixamos isso numa classe específica. Vamos mexer nessa classe Camera daqui a pouco. E vamos chamar então o método que nós vamos criar.
+
+[04:34] Eu vou precisar ter acesso à câmera, então já vou criar o atributo: private lazy var camera = Camera().
+
+[04:43] Lembrando que esse lazy é uma variável preguiçosa, ou seja, essa variável só vai ser instanciada quando ela for utilizada. Isso ajuda no gerenciamento de memória.
+
+[04:56] E eu também vou criar uma variável que vai ser o gerenciador de imagem. O nome que nós demos foi “controladorDeImagem”, então vai ficar private lazy var controladorDeImage = UIImagePickerController(). Temos já essas duas variáveis, então agora podemos utilizar dentro do nosso menu.
+
+[05:30] A ideia é implementarmos um novo método na classe da câmera, onde nós vamos chamar a biblioteca. O nome desse método vai ser abrirBibliotecaFotos, e eu vou precisar receber por parâmetro o UIView Controller, porque eu quero exibir essa galeria de fotos. E eu também vou precisar novamente do image picker, que é o UIImagePickerController:
+
+[06:04] Nós vamos fazer algumas configurações parecidas com o método abrir câmera. Por exemplo, vamos settar o imagePicker.delegate. Vamos permitir edição na foto, então imagePicker.allowsEditing = true.
+
+[06:19] E o mais importante, é essa linha sourceType, onde configuramos como câmera, mas agora queremos acessar a biblioteca, então imagePicker.sourceType = .photoLibrary.
+
+[06:30] Depois disso podemos chamar o Controller, que nós estamos recebendo o parâmetro, e vamos chamar o método present, onde vamos passar o imagePicker de forma animada, e no completion não vamos fazer nada.
+
+[06:48] Com isso vamos voltar então no recibo e utilizar a variável câmera que nós utilizamos. Vamos começar citando o delegate, e depois vamos abrir a biblioteca de fotos. Então precisamos passar um controller, que é o próprio View Controller, e o imagePicker, que é o controladorDeImagem.
+
+[07:12] Então fizemos uma configuração inicial. Ele está reclamando porque nós estamos dentro de uma closure, então precisamos referenciar as variáveis com self.
+
+[07:24] E eu vou rodar então no simulador para fazermos o nosso primeiro teste. Ele está reclamando porque implementamos o protocolo de delegate, mas nós ainda não implementamos no View Controller, então vamos fazer isso: extension ReciboViewController: CameraDelegate. E dentro passamos o método didSelectFoto:
+
+[07:56] Vou rodar o projeto para fazermos então nosso teste e verificar se precisamos fazer mais alguma configuração ou se só essa configuração inicial já basta para acessarmos a biblioteca de fotos. Então vamos dar uma olhada.
+
+[08:15] Já buildamos o app, vou entrar em recibos e clicar no ícone da câmera. RepareNote que nós não temos uma ação porque não exibimos o menu que nós criamos. Então temos que chamar o present(menu, animated: true, completion: nil).
+
+[08:46] Vou rodar e subir o simulador mais uma vez para fazermos o teste. Vou entrar na aba de recibos, clicar no ícone da câmera, clicar em “Biblioteca de fotos” e por enquanto nós não temos ainda acesso à biblioteca de fotos.
+
+[09:05] Nós precisamos pedir a permissão do usuário mais uma vez. Para ter acesso à biblioteca nós precisamos pedir a permissão do usuário. Nós já fizemos isso e vamos configurar novamente a seguir.
+
+@@03
+Escolhendo foto da biblioteca
+
+[00:00] Continuando, vamos novamente configurar a permissão no “info.plist”. Lembrando que vários recursos do iOS precisam de permissão do usuário para que consigamos acessar, como localização, câmera, push, enfim. Todos os recursos que precisemos acessar do usuário nós precisamos de permissão.
+[00:27] Então vou clicar no botão de mais, onde vou adicionar mais uma permissão. E quando eu começo a digitar “Privacy”, note que surge uma lista com vários tipos de permissão.
+
+[00:42] A que eu vou utilizar vai ser a permissão de acesso a foto, então “Privacy – Photo Library Additions Usage Description”, que é a permissão que nós precisamos. Eu vou basicamente utilizar uma mensagem parecida: “Alura Ponto necessita de acesso à biblioteca de imagens”.
+
+[01:22] Com isso, voltamos no View Controller e vamos aproveitar também para criar mais uma opção para o nosso menu. Até agora nós temos a opção de acesso à biblioteca de fotos. Vamos criar o botão “Cancelar” também.
+
+[01:38] Então vou adicionar uma ação, cujo tipo será destrutivo, e na closure não vou passar nada, porque não queremos fazer nada quando o usuário clicar no botão “Cancelar”: menu.addAction(UIAlertAction(title: “Cancelar”, style: .destructive, handler: nil)).
+
+[02:06] Vou rodar o aplicativo mais uma vez. Eu vou, inclusive apagar ele do simulador. Clico e seguro no ícone, depois clico em “Deletar”. E vou fazer mais um build. Vamos testar essa implementação. Vou clicar no View Controller de recibo e no ícone da foto.
+
+[02:32] Já temos o nosso menu de seleção de fotos. Eu vou clicar na "biblioteca de fotos" e então nós já temos permissão para uso das fotos. O que nós precisamos fazer agora é, ao escolher uma foto, setar essa imagem nessa View de fundo.
+
+[02:54] Quando escolhermos uma foto ele vai trazer para esse método didSelectFoto, que é o método de delegate que é disparado quando nós escolhemos a foto.
+
+[03:07] Nós precisamos pegar a foto selecionada e utilizar esse outlet que nós temos, que é fotoPerfilImageView, onde nós vamos setar a foto que o usuário selecionou.
+
+[03:23] Eu vou fazer fotoPerfilImageView.image = image. Vou rodar mais uma vez e entrar no simulador para testarmos. Vou clicar em “Recibo > Biblioteca de Fotos”. Vou escolher uma foto, clico em “Escolher”.
+
+[03:48] Temos um ajuste para fazer, primeiro para a imagem ocupar todo o espaço disponível. Repara que ficou um corte em cima e embaixo da foto de perfil. Então vou entrar no recibo e vou selecionar o “Image View”. E vamos então utilizar a propriedade de “Content Mode”.
+
+[04:14] No menu lateral direito temos selecionada a opção “Aspect Fit”. Vamos mudar para “Aspect Fill”, que é a propriedade que preenche a imagem com o espaço disponível. Então temos um zoom na imagem para que ela ocupe todo o espaço.
+
+[04:35] O segundo ajuste a fazer é pegar o Outlet do botão, que é escolhaFotoButton e agora vamos ter que tirar a imagem de fundo, porque temos uma câmera.
+
+[04:55] Então vou pegar o método setImage e passar um UIImage sem nenhum nome, ou seja, uma imagem vazia, no caso. Vamos fazer esse teste. Vou rodar o simulador, e deveria sumir aquele ícone de câmera quando selecionamos uma imagem da biblioteca.
+
+[05:19] Vou clicar no ícone da câmera, entrar na biblioteca de fotos, selecionar uma foto e clicar em “Escolher”. E agora temos a nossa imagem ocupando todo o espaço.
+
+[05:33] O que podemos fazer, ao invés de tirar o ícone, que ainda continua aparecendo, é bloquear o acesso ao botão. Então podemos ocultá-lo depois que o usuário selecionar a foto. Então vou fazer escolhaFotoButton.isHidden = true.
+
+[05:55] Vamos fazer esse último teste. Vou subir o simulador de novo, entrar na biblioteca de foto, selecionar uma imagem, e agora sim nós temos então a nossa imagem setada no Image View.
+
+[06:20] Essa é uma forma super simples de utilizarmos a biblioteca de fotos, e é muito usual em vários aplicativos de cadastro de usuário, em que o usuário precisa colocar uma foto de documento ou algo do tipo. E precisamos manejar essas imagens dentro do app. Então aprendemos a tirar foto e a acessar a biblioteca.
+
+[06:43] Agora precisamos continuar com as implementações, colocando os recibos e persistindo-os localmente no nosso device.
+
+@@04
+Biblioteca de fotos do iOS
+
+Em formulários de cadastro, em que precisamos inserir uma foto, é comum ter a funcionalidade da câmera. Porém não são todos os usuários que utilizam esse recurso. É recomendado disponibilizar, além da câmera, a biblioteca de imagens do iOS, assim, o usuário consegue escolher uma foto que ele já tirou anteriormente.
+O que precisamos implementar para acessar a biblioteca de fotos?
+
+Precisamos ter acesso aos métodos do protocolo UIImagePickerControllerDelegate, pois, a partir dele, conseguimos alterar o sourceType.
+ 
+O protocolo UIImagePickerControllerDelegate possui vários métodos, entre eles, o que utilizamos para recuperar a foto tirada com a câmera.
+Alternativa correta
+É através da classe UIImagePickerControllerDelegate que setamos a opção 'photoLibrary'.
+ 
+UIImagePickerControllerDelegate é um protocolo utilizado para acessar os métodos de delegate da classe UIImagePickerController.
+Alternativa correta
+Precisamos ter acesso à classe UIImagePickerController para mudar o sourceType para 'photoLibrary'.
+ 
+Alternativa correta! Através da classe UIImagePickerController, conseguimos mudar o conteúdo de exibição para biblioteca.
+Alternativa correta
+Precisamos criar outra variável do tipo UIImagePickerController. Uma serve para câmera e, a outra, para biblioteca de fotos.
+ 
+Não é necessário ter duas variáveis do mesmo tipo para alterar a funcionalidade.
+
+@@05
+Faça como eu fiz: Implementando a seleção de fotos
+
+Neste capítulo, utilizamos a classe UIImagePickerController para selecionar fotos da biblioteca de imagens do iOS. Para fazer isso, alteramos o sourceType para .photoLibrary.
+Além disso, como criamos uma classe para centralizar toda lógica de manipulação de fotos/biblioteca, precisamos de alguma forma devolver o conteúdo selecionado pelo usuário para o ViewController. Como podemos fazer isso?
+
+Um dos padrões de projeto (design patterns) mais utilizado em iOS é o delegate. Através dele, definimos um protocolo que deve ser implementado no controller que receberá a foto e, também, uma variável com o tipo do protocolo para que o ViewController assine:
+Classe CameraCOPIAR CÓDIGO
+protocol CameraDelegate: AnyObject {
+    func didSelectPhoto(_ foto: UIImage)
+}COPIAR CÓDIGO
+Em seguida, precisamos da variável delegate:
+
+class Camera: NSObject {
+
+    weak var delegate: CameraDelegate?
+   ...
+   ...
+   ...COPIAR CÓDIGO
+E, por último, devemos implementá-lo no ViewController:
+
+func tentaAbrirCamera() {
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            camera.delegate = self
+            camera.tirarFoto(self, controladorDeFoto)
+        }
+
+}COPIAR CÓDIGO
+extension HomeViewController: CameraDelegate {
+    func didSelectPhoto(_ foto: UIImage) {
+        // Aqui podemos manipular a foto selecionada
+    }
+}
+
+@@06
+O que aprendemos?
+
+Nesta aula, aprendemos sobre:
+Implementação da classe UIImagePickerController:
+O tipo SourceType.photoLibrary fornece, aos dispositivos, o uso da biblioteca de imagens.
+Para exibir a tela de seleção de foto ou câmera, você pode utilizar o método present do ViewController.
