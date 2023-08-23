@@ -743,3 +743,191 @@ O que aprendemos?
 Nesta aula, aprendemos sobre:
 Salvar elementos local: Aprendemos a configurar o Core Data e criar schema de objetos a serem persistidos.
 Listar elementos: Utilizamos o NSFetchedResultsController para recuperar as informações salvas.
+
+#### 23/08/2023
+
+@05-Finalizando projeto
+
+@@01
+Projeto da aula anterior
+PRÓXIMA ATIVIDADE
+
+Se você deseja começar o curso a partir desta aula, pode fazer o download do projeto desenvolvido até o momento.
+
+https://github.com/alura-cursos/2315-Alura-Ponto/archive/faabbd7f535d0c412c0f3217ff86e15cb9ac26ce.zip
+
+@@02
+Testanto persistência local
+
+[00:00] Agora que nós já implementamos tanto o método salvar quanto o método carregar dos recibos, já conseguimos testar essas implementações.
+[00:11] A única coisa que precisamos fazer é substituir todos os lugares que utilizam essa classe seção, que é um singleton do nosso projeto, onde nós temos uma lista de recibos que fica salva de forma momentânea na memória do app. Ou seja, a partir do momento em que eu fecho o aplicativo ele perde todos esses dados. Então vamos substituir isso pela classe recibo e os métodos salvar e carregar que nós criamos.
+
+[00:42] Para ficar mais fácil de sabermos quais pontos temos que refatorar eu vou de fato deletar essa classe Secao do projeto. Então no menu lateral esquerdo clico com o botão direito sobre a classe Secao e clico em “Delete > Move to Trash”.
+
+[00:59] Se eu apertar “Command + B” ele vai apontar erros em vários lugares. Nós temos quatro erros do nosso projeto, e vamos então substituir todos esses pedaços.
+
+[01:13] Por exemplo, na classe HomeViewController, o método didSelectFoto é disparado quando tiramos uma selfie e confirmamos. Então ele estava adicionando o recibo na lista. É só apagar a linha Secao.shared.addRecibos(recibo), porque embaixo nós já tínhamos implementado o método save.
+
+[01:38] Vou entrar no método save(contexto) só para refatorar. Vou colocar “salvar” ao invés de “save”, func salvar. Vou chamar então recibo.salvar(contexto), só para deixar tudo em português.
+
+[02:01] O próximo ponto são os métodos da TableView, o numberOfRowsInSection e o cellForRow. Precisamos saber quando elementos vamos listar no Table View. Nós estávamos utilizando a seção, e a partir de agora vamos usar o buscador que nós criamos.
+
+[02:22] Então vai ficar return buscador.fetchedObjects?.count ?? 0. E como é opcional, se não tiver nada ou se tiver nil nós setamos como 0.
+
+[02:35] Em let recibo = Secao.shared.listaDeRecibos[indexPath.row] nós estamos pegando o objeto de acordo com a linha da TableView. Nós precisamos substituir Secao.shared.listaDeRecibos[index.Path.row] exatamente pelo buscador.fetchedObjects, que é a lista de objetos que nós temos e que nós estamos buscando.
+
+[02:52] Então eu vou chamar buscador.fetchedObjects?[indexPath.row]. E mais abaixo nós temos um método que é disparado quando tentamos deletar um recibo. Nós ainda não mexemos com essa etapa. Mas podemos utilizar a lista que nós temos.
+
+[03:23] Então eu vou pegar o nosso buscador.fetchedObjects?.remove(at: index), passando o index, que é o índice do recibo que estamos tentando deletar.
+
+[03:51] Na verdade nós podemos até tirar a linha buscador.fetchedObjects?.remove(at: index), vou deixar só fazendo reload, porque é o próximo assunto que nós vamos tratar, que é sobre o deletar recibo. Acho que são esses pontos que nós tínhamos que refatorar para testar o save e o list.
+
+[04:11] Agora vamos testar. Estou com meu iPhone conectado, eu vou gerar um build e vou espelhar a tela para podermos ver.
+
+[04:22] Já subi o simulador. Na verdade estou espelhando meu iPhone no QuickTime para podermos utilizar o iPhone físico mesmo.
+
+[04:33] Em recibos nós não temos nada. Então vou registrar o ponto. Vou ativar minha câmera, tirar uma foto e usar. E nós temos então o primeiro ponto registrado, dia 12/10, às 19h33. E vamos fazer o teste. Vou fechar o aplicativo, abrir novamente e vou entrar em recibos.
+
+[05:08] Agora não estamos mais perdendo essas informações. O aplicativo pode ser fechado e ao reabrir conseguimos resgatar todos os pontos.
+
+[05:17] Vou registrar mais um, vou usar a foto. Agora temos mais um registro de ponto, às 19h34. Vou fechar o aplicativo e abrir novamente. Conseguimos então bater os pontos sem perder essas informações.
+
+[05:42] O próximo passo é deletarmos um recibo. Vamos aprender como apagar esse recibo e também como manusear isso no Core Data.
+
+@@03
+Deletando objetos
+
+[00:00] Para finalizar, agora falta implementarmos a operação de deletar um recibo. Nós já estamos salvando e listando, e agora precisamos deletar um recibo.
+[00:10] É basicamente bem parecido com salvar. Tem apenas uma configuração diferente. Vamos começar então agora. Eu vou voltar na classe Recibo, onde nós estamos concentrando todos os nossos métodos da nossa camada DAO e eu vou criar um novo método, que é o método deletar. E eu vou precisar do contexto: func deletar(_ contexto: NSManagedObjectContext).
+
+[00:44] Agora eu posso chamar o contexto, e eu vou deletar o próprio objeto que está chamando esse método, por isso eu passo o self: contexto.delete(self).
+
+[00:53] Depois que eu deleto eu preciso salvar. Então eu vou fazer um do {} catch {}, que é uma operação igual a que nós estamos fazendo para o método salvar.
+
+[01:04] Vou chamar o try contexto.save. E se eu não conseguir eu preciso ver o erro, então eu pego print(error.localizedDescription);
+
+[01:14] É importante que sempre que chamarmos esse método deletar temos que salvar. Se não tivéssemos implementado o do catch nós iríamos deletar, iria sumir a nossa lista na hora, mas na hora em que abríssemos o app de novo ele estaria lá. Então é sempre importante deletar e salvar a operação no contexto.
+
+[01:37] Agora nós já implementamos o método deletar na classe Recibo. Vamos voltar no View Controller, e precisamos buscar qual o objeto que será deletado. Nós temos uma célula, que é esse card, quando o usuário clica no "X" precisamos saber qual foi o elemento da lista em que ele clicou para podermos deletar.
+
+[02:08] Eu vou criar uma constante chamada "recibo". Nós temos nosso buscador e temos o let recibo = buscador.fetchedObjects. Repara que ele é uma lista opcional de recibos. E nós vamos pegar o recibo no index que o usuário clicou. Ou seja, se ele clicar no primeiro o index será 0. Se ele clicar no segundo será 1, no terceiro será 2 e assim por diante. Então let recibo = buscador.fetchedObjects?[index].
+
+[02:35] Ele está retornando um recibo opcional, só para fazermos a extração do valor vou fazer um guard let. Assim eu consigo extrair o valor dessa variável opcional: else { return }.
+
+[02:49] Vou apagar a linha reciboTableView.reloadData(). E como eu já tenho o recibo basta eu utilizar o método deletar que nós criamos: recibo.deletar().
+
+[02:59] Só que nós precisamos do contexto. Na verdade, nós não criamos nenhuma variável de contexto. Então vou criar uma igual a que já temos na home. Já temos o contexto lá, então vamos também utilizar o contexto agora.
+
+[03:25] Vou passá-lo por parâmetro: recibo.deletar(contexto). E temos então acesso ao método deletar.
+
+[03:33] Para finalizar precisamos implementar o seguinte protocolo: em toda a operação que utilizamos o nosso buscador ele tem alguns eventos que nos dá acesso. Por exemplo, quando deletamos nós conseguimos ficar sabendo, e conseguimos deletar esse elemento da lista.
+
+[04:01] Então conseguimos ter acesso a alguns desses eventos através desse protocolo do fetchedResultsControllerDelegate.
+
+[04:12] Ele tem vários métodos bem parecidos. O que vamos utilizar é o didChange, retornando o indexPath. Repara que tem vários métodos bem parecidos, e o que vamos utilizar é que tem didChange anObject: Any, at indexPath.
+
+[04:38] Esse método traz alguns tipos, que é o que vamos explorar agora. Eu posso fazer um switch type. Então por exemplo, se eu deletar eu posso fazer alguma coisa dentro disso e se eu fizer alguma outra operação eu também posso fazer alguma coisa.
+
+[05:00] O que nos interessa nesse momento é o delete. Porque quando deletamos nós vamos pegar exatamente o elemento da lista que foi deletado, através do indexPath dele, e vamos deletar aquela linha. Então ele será útil para isso.
+
+[05:17] O indexPath na verdade é o local, a linha e a seção em que um recibo está dentro da lista. Então eu preciso desse indexPath para deletar o recibo correto.
+
+[05:34] Então vou fazer uma verificação. Vou criar if let indexPath = indexPath. Se existir ele vai entrar, então pegamos nossa TableView e fazemos deleteRows: recibo.TableView.deleteRows.
+
+[05:53] Dentro vamos passar o [indexPath] que nós verificamos no if let. E em seguida é o efeito que nós queremos dar, no caso esse fade, que eu vou testar quando deletarmos uma linha da TableView. E se for qualquer outra operação que não seja a delete, eu vou pedir para o TableView atualizar. Então vou fazer reciboTableView.reloadData(). Nós veremos na prática como isso funciona, é bem legal esse método deleteRows.
+
+[06:28] Então já temos a classe Recibo com nosso método deletar. Já temos o nosso protocolo implementado, nosso buscador; e já estamos então chamando o método deletar. Agora precisamos testar. Então vou rodar o projeto no meu iPhone e vamos fazer esse teste.
+
+[06:52] Já espelhei meu iPhone para testar. Temos dois recibos. Vou clicar no das 19h34 para deletar. Repara que ele teve esse efeito da TableView de deletar, que é exatamente o método que implementamos.
+
+[07:16] Mas o mais importante é verificar se a linha foi realmente deletada. Então vou fechar o aplicativo e abrir novamente. E deletamos mesmo. Vou fazer mais um teste. Vou bater o ponto. Tenho dois recibos novamente. Vou clicar no último, fechar o app e abrir novamente. Então já estamos fazendo todas as operações corretamente.
+
+[07:56] A única coisa que eu não falei foi a questão de atualizar. Nós aprendemos a salvar, a listar e a deletar. E se eu quisesse, por exemplo, atualizar algum recibo que já foi salvo? Vou pegar como exemplo o método deletar, mas vamos supor que fosse para atualizar o recibo.
+
+[08:15] Nós poderíamos fazer recibo., e mudar alguma propriedade. Vou pegar o status, por exemplo, e mudar para true: recibo.status = true. E , em seguida camaríamos o método salvar novamente, recibo.salvar(contexto). Como já existe um id salvo no Core Data, que é esse em que estamos mexendo, ele não vai salvar de novo e sim atualizar esse modelo de acordo com as alterações que fizermos.
+
+[08:46] Então o "atualizar" é basicamente mudar a propriedade que você quer e pedir para salvar novamente.
+
+[08:53] Então com isso fechamos todas as implementações desse primeiro curso, onde nós falamos de alguns frameworks nativos, e o mais importante, terminamos todas as operações de persistência no nosso device.
+
+@@04
+Deletando informações
+PRÓXIMA ATIVIDADE
+
+De acordo com que estudamos, assinale a alternativa correta que mostra corretamente como deletar um objeto utilizando o Core Data:
+
+Para apagar um objeto, precisamos ter acesso ao contexto em que podemos utilizar o método .delete.
+ 
+Alternativa correta
+Para apagar, precisamos ter acesso ao contexto onde podemos utilizar o método .delete. Em seguida, utilizamos o contexto para salvar a operação.
+ 
+Alternativa correta! Correto! Primeiro, precisamos chamar o contexto e o método .delete. Depois, é necessário salvar a operação.
+Alternativa correta
+Para apagar, utilizamos a variável do tipo NSFetchedResultsController e, em seguida, a propriedade fetchedObjects.
+ 
+Alternativa correta
+Para enviar uma grande quantidade de parâmetros é necessário utilizar o método GET.
+ 
+Parabéns, você acertou!
+
+
+@@05
+Faça como eu fiz: Deletando objetos
+PRÓXIMA ATIVIDADE
+
+Para deletar um objeto do Core Data, primeiro precisamos recuperar esse objeto através do fetchedResultController.fetchedObjects. Depois que recuperamos o objeto, como podemos de fato apagar do device usando o Core Data?
+
+Primeiro, precisamos deletá-lo do contexto, e depois devemos salvar o contexto com essa alteração:
+    func deletar(_ coreDataContext: NSManagedObjectContext) {
+        coreDataContext.delete(self)
+
+        do {
+            try coreDataContext.save()
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
+
+@@06
+Projeto final
+PRÓXIMA ATIVIDADE
+
+Parabéns por chegar até aqui!
+Você pode visualizar o projeto no Github ou até mesmo realizar o download dos arquivos.
+
+https://github.com/alura-cursos/2315-Alura-Ponto
+
+https://github.com/alura-cursos/2315-Alura-Ponto/archive/refs/heads/main.zip
+
+@@07
+O que aprendemos?
+PRÓXIMA ATIVIDADE
+
+Nesta aula, aprendemos sobre:
+Deletar elementos local: Com isso, finalizamos as operações de CRUD que podemos fazer utilizando o Core Data.
+
+@@08
+Conclusão
+
+[00:00] Parabéns! Chegamos na etapa final desse curso, onde falamos sobre alguns frameworks nativos do iOS. E agora vamos revisar rapidamente todos os pontos pelos quais passamos.
+[00:11] A ideia era começar o aplicativo implementando algumas features, como a câmera e a biblioteca de fotos. A ideia foi criar uma classe que centralizasse todos esses métodos para conseguirmos utilizar de uma maneira mais fácil e deixar isso desacoplado do View Controller.
+
+[00:29] Então nós temos a classe Camera, temos alguns métodos, como abrir a câmera e a biblioteca de fotos. E fazemos isso através do UIImagePickerController. Tanto quando tiramos uma foto ou quando quando selecionamos uma foto da biblioteca temos acesso a essas fotos através do método de delegate do Image Picker Controller, que é o método didFinishPickingMediaWithInfo.
+
+[00:58] Com isso, conseguimos fazer o casting da imagem desse dicionário que ele retorna, para UIImage, e conseguimos manusear isso no nosso aplicativo.
+
+[01:09] No nosso caso temos um delegate que está devolvendo essa foto tanto para a classe Home, onde nós registramos o ponto, salvamos, quanto para a classe Recibo, onde nós setamos de fato essa foto em um UIImage.
+
+[01:31] Logo após isso nós começamos a estudar uma forma de persistir esses dados no nosso aplicativo de forma local. Então nós tínhamos esse problema que ao fechar o app e abrir novamente nós perdíamos as informações.
+
+[01:45] E começamos a falar um pouco sobre o Core Data, que é um framework com muitas funcionalidades. Mas nesse momento nós precisávamos apenas salvar esses recibos localmente no nosso app.
+
+[02:02] Então nós discutimos sobre o Core Data Stack, vimos como criar entidades e atributos na nossa entidade. Logo após, nós utilizamos a classe Recibo para criar uma camada DAO, onde nós centralizamos alguns métodos importantes, como salvar, carregar e deletar.
+
+[02:27] E nós utilizamos todas essas operações na classe Recibo, no View Controller de recibo, onde nós então salvamos e listamos todos os recibos salvos. E na última etapa nós aprendemos a deletar as linhas da TableView de acordo com a linha selecionada. Primeiro nós deletamos nosso recibo no nosso Core Data.
+
+[02:53] Ele consegue ter acesso a esse evento, e então nós conseguimos deletar a linha exata da Table View.
+
+[03:02] O objetivo desse curso foi começar a mostrar para você como utilizar esses frameworks nativos da Apple para resolver diversos tipos de problemas no nosso app. Nós apresentamos alguns que eu tenho certeza que você vai utilizar, seja no seu app ou na sua empresa. Então é muito importante ter esses conhecimentos sobre as bibliotecas nativas do iOS.
+
+[03:28] Ao final do curso você será direcionado à página de avaliação desse curso, peço que você deixe seu feedback. E eu espero você em uma próxima oportunidade. Até mais!
